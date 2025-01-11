@@ -13,6 +13,7 @@ import subprocess
 import os, sys
 import re
 import pathlib
+import json
 
 MIN_PROTOCOL_VERSION = 1
 CURRENT_PROTOCOL_VERSION = 1
@@ -326,8 +327,8 @@ def make_meta_info_dict(exclude_diff = 'notebooks', args = None, wd = f"{pathlib
         "args": {a: getattr(args,a) for a in vars(args)} if args else {}
     }    
     if subprocess.call(["git", "branch"], cwd=wd, stderr=subprocess.STDOUT, stdout=open(os.devnull, 'w')) != 0:
-        meta_data["git_info"] = {"hash" : "Not a git repository!",
-                "diff" : "Not a git repository"}
+        meta_data["git_hash"] = "Not a git repository"
+        meta_data["git_diff"] = "Not a git repository"
     else:
         meta_data["git_hash"] = subprocess.check_output(['git', 'log', '-1', '--format="%H"'], cwd=wd, encoding='UTF-8')
         diff_comm = ['git', 'diff']
@@ -336,3 +337,23 @@ def make_meta_info_dict(exclude_diff = 'notebooks', args = None, wd = f"{pathlib
         meta_data["git_diff"] = subprocess.check_output(diff_comm, encoding='UTF-8', cwd=wd)
 
     return meta_data
+
+def write_logfile(
+    outpath,
+    logname,
+    args={},
+    meta_info={},
+    wd = f"{pathlib.Path(__file__).parent}/../",
+):
+    logname = f"{outpath}/{logname}.log"
+
+    with open(logname, "w") as logf:
+        info = make_meta_info_dict(args=args, wd=wd)
+
+        for k, v in {**info, **meta_info}.items():
+            logf.write("\n" + "-" * 80 + "\n")
+            if isinstance(v, dict):
+                logf.write(k)
+                logf.write(json.dumps(v, indent=5).replace("\\n", "\n"))
+            else:
+                logf.write(f"{k}: {v}\n")

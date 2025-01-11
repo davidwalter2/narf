@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "narf-ioutils"
-version = "0.1.4"
+version = "0.1.7"
 description = "Storage of objects in h5py files with lazy reading."
 readme = { file = "doc/ioutils.md", content-type = "text/markdown" }
 license = { text = "MIT" }
